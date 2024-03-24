@@ -319,4 +319,4 @@ class GMCGeigerCounter:
 		return next(reader)
 
 if __name__ == '__main__':
-	geiger = GMCGeigerCounter(connection=GMCConnection(port='COM3'))
+	geiger = GMCGeigerCounter(connection=GMCConnection(port='COM11'))
