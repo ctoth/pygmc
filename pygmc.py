@@ -142,6 +142,28 @@ class EncryptionMethod(IntEnum):
 	WPA2_WPA3_PSK = 7
 	WAPI_PSK = 8
 
+def find_GMC_port():
+    for port_info in serial.tools.list_ports.comports():
+        try:
+            connection = serial.Serial(port_info.device, 115200, timeout=0.5, write_timeout=0.5)
+            connection.write(b'<GETVER>>')
+            time.sleep(0.5)
+            response = connection.read_all()
+            if b'GMC-' in response:
+                connection.close()
+                return port_info.device
+            connection.close()
+        except (OSError, serial.SerialException):
+            pass
+    return None
+
+def initialize_first_valid_counter():
+    port = find_GMC_port()
+    if port:
+        return GMCGeigerCounter(connection=GMCConnection(port=port))
+    else:
+        raise RuntimeError("No valid GMC Geiger counter found.")
+
 class GMCConnection:
 
 	def __init__(self, port):
@@ -342,4 +364,5 @@ class GMCGeigerCounter:
 		return next(reader)
 
 if __name__ == '__main__':
+    geiger = initialize_first_valid_counter()
 	geiger = GMCGeigerCounter(connection=GMCConnection(port='COM11'))
